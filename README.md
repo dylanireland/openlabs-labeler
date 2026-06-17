@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenLabs Labeler (web)
 
-## Getting Started
+A static, client-side **Next.js + TypeScript** web app to design and print chemical
+labels to a **Niimbot M2** over **Web Bluetooth**. Rebuild of the Python/Tkinter
+desktop app — deployable to **labelmaker.openlabsus.com** (see `DEPLOY.md`).
 
-First, run the development server:
+Everything runs in the browser: Web Bluetooth talks to the printer, Canvas renders the
+label, IndexedDB stores your profiles. **No server.**
+
+## Features
+
+- **Profiles** — save a whole label setup (template + text blocks + sizes + rotation) as a
+  named profile; switch from a dropdown. New / Save as… / Rename / Delete. Auto-saved.
+- **Template background** — pick any PNG/JPG as the label background, with `stretch` /
+  `contain` / `cover` fit.
+- **Freely-placed text** — add as many text elements as you want; each has its own text,
+  **font** (built-ins or **upload** a `.ttf/.otf/.woff`), **size**, **bold**, **anchor**,
+  **colour**, and position.
+- **Position any way** — drag on the live canvas, **arrow-key** nudge (Shift = 10px), or
+  type exact **X/Y px**.
+- Adjustable label size (mm), density, copies, and print rotation (0/90/180/270).
+- **Direct printing** to the M2 over Web Bluetooth, **Test print** (calibration pattern),
+  and **Export PNG**.
+- **Import** your old desktop `config.json` (Profile → Import…).
+
+## Requirements
+
+- **Google Chrome or Microsoft Edge** on desktop. Web Bluetooth is **not** in Safari,
+  Firefox, or any iOS browser — no workaround for a pure web app. (You can still design in
+  those browsers; you just can't print.)
+- A **Niimbot M2** with a **genuine NIIMBOT RFID label roll** (the M2 refuses to print
+  without one), powered on and not connected to the phone app.
+
+## Run it (local dev)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install        # once
+npm run dev        # http://localhost:3456
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open **http://localhost:3456 in Chrome** (`localhost` is a secure context, so Web
+Bluetooth works without HTTPS). Then:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Pick/make a **Profile**, optionally **Choose** a template, set the **Label size**.
+2. Build **text elements** (Add / Duplicate / Remove); edit the selected one; drag it on the
+   canvas or type X/Y.
+3. **Connect** the printer (Printer panel) and pick your M2 in the chooser.
+4. **Print**, or **Test print** first to check orientation/scale. **Export PNG** saves a copy.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> If port 3456 is busy: `npm run dev -- -p <port>`.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev         # dev server on :3456
+npm run build       # static export → ./out
+npm test            # vitest unit tests
+npm run typecheck   # tsc --noEmit
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Next.js 16 (App Router, `output: 'export'` — static SPA, no server).
+- [`@mmote/niimbluelib`](https://github.com/MultiMote/niimbluelib) (pinned) behind a thin
+  `PrinterService` adapter — the M2 protocol over Web Bluetooth, same lib as niim.blue.
+- Zustand (state) · IndexedDB (profiles/fonts) · Canvas 2D (render) · Tailwind v4.
 
-## Deploy on Vercel
+## Deploying
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See **`DEPLOY.md`** — static host with auto-HTTPS (Vercel recommended).

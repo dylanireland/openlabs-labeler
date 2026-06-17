@@ -1,0 +1,10 @@
+{
+  // Deploys the static export (out/) as an assets-only Cloudflare Worker.
+  // There is no Worker script — Cloudflare just serves the files.
+  "name": "openlabs-labeler",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  }
+}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -13,9 +13,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "OpenLabs Labeler",
   title: "OpenLabs Labeler",
   description:
     "Design and print chemical labels to a Niimbot M2 over Web Bluetooth.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "OpenLabs Labeler",
+    statusBarStyle: "default",
+  },
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#6D28D9",
+  width: "device-width",
+  initialScale: 1,
+  // allow pinch-zoom (accessibility); don't lock it
+  maximumScale: 5,
 };
 
 export default function RootLayout({

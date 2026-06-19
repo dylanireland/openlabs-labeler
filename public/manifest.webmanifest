@@ -1,0 +1,14 @@
+{
+  "name": "OpenLabs Labeler",
+  "short_name": "Labeler",
+  "description": "Design and print chemical labels to a Niimbot M2 over Web Bluetooth.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6D28D9",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

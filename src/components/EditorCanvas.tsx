@@ -66,7 +66,8 @@ export default function EditorCanvas() {
     if (!canvas || cw <= 0) return;
     const dims = deviceSize(design);
     const dpr = window.devicePixelRatio || 1;
-    const displayScale = cw / dims.width;
+    // Fill the container on phones; cap the on-screen size on wide desktops.
+    const displayScale = Math.min(cw, 760) / dims.width;
     const k = displayScale * dpr;
 
     canvas.width = Math.max(1, Math.round(dims.width * k));

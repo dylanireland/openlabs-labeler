@@ -23,6 +23,32 @@ export interface PrintRender {
 /** Round up to the next multiple of 8 (the encoder requires cols % 8 === 0). */
 export const nextMultipleOf8 = (n: number): number => Math.ceil(n / 8) * 8;
 
+/** Largest PNG export dimension we'll produce (avoids huge-canvas OOM). */
+export const MAX_EXPORT_PX = 8000;
+
+/**
+ * Scale factor for a full-resolution PNG export. Renders the label large enough
+ * that the template image isn't downscaled (so the export ≈ the template's native
+ * size when the template matches the label's aspect ratio), never below the label's
+ * device size (scale ≥ 1) and never beyond MAX_EXPORT_PX on either side.
+ *
+ * Pass tplW/tplH = 0 when there is no template → scale 1 (device size).
+ */
+export function exportScale(
+  tplW: number,
+  tplH: number,
+  devW: number,
+  devH: number,
+  maxPx: number = MAX_EXPORT_PX,
+): number {
+  if (devW <= 0 || devH <= 0) return 1;
+  let scale = 1;
+  if (tplW > 0 && tplH > 0) {
+    scale = Math.max(1, tplW / devW, tplH / devH);
+  }
+  return Math.min(scale, maxPx / devW, maxPx / devH);
+}
+
 /** Luminance threshold (0–255) below which a pixel becomes black ink. */
 export const PRINT_THRESHOLD = 128;
 

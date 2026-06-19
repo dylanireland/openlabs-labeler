@@ -20,3 +20,17 @@ export function downloadText(
 ): void {
   downloadBlob(new Blob([text], { type }), filename);
 }
+
+/** Make a free-form name safe as a download filename base (no extension).
+ *  Strips path separators and Windows-reserved chars; keeps letters/digits/
+ *  spaces/dashes; collapses whitespace; guards empty/whitespace-only names. */
+export function safeFilenameBase(
+  name: string | null | undefined,
+  fallback = "label",
+): string {
+  const cleaned = (name ?? "")
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned || fallback;
+}

@@ -6,12 +6,12 @@ import {
   selectCurrentProfile,
 } from "@/lib/state/store";
 import { describePrinterError } from "@/lib/printer/PrinterService";
-import { renderPrintCanvas } from "@/lib/render/print";
+import { renderPrintCanvas, exportScale } from "@/lib/render/print";
 import { renderCalibrationCanvas } from "@/lib/render/calibration";
 import { paintDesign } from "@/lib/render/paint";
 import { loadImage } from "@/lib/render/image";
 import { deviceSize } from "@/lib/model/design";
-import { downloadBlob } from "@/lib/download";
+import { downloadBlob, safeFilenameBase } from "@/lib/download";
 import { btnPrimary, btnSecondary } from "./ui";
 
 export default function ActionsBar() {
@@ -57,14 +57,34 @@ export default function ActionsBar() {
   async function onExport() {
     const tpl = await loadTpl();
     const dims = deviceSize(design);
+    // Render at the template's native resolution (text scales with it and stays
+    // crisp) so the export isn't a downscaled thumbnail; capped to MAX_EXPORT_PX.
+    const scale = exportScale(
+      tpl?.naturalWidth ?? 0,
+      tpl?.naturalHeight ?? 0,
+      dims.width,
+      dims.height,
+    );
     const c = document.createElement("canvas");
-    c.width = dims.width;
-    c.height = dims.height;
+    c.width = Math.max(1, Math.round(dims.width * scale));
+    c.height = Math.max(1, Math.round(dims.height * scale));
     const ctx = c.getContext("2d");
     if (!ctx) return;
+    // Fill the whole canvas white in raw pixel space first, so a rounded-up edge
+    // column/row can't be left transparent by the scaled paint below.
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.scale(scale, scale);
+    // paintDesign draws in device-size coordinates; ctx.scale maps them up to the
+    // full export canvas (vector text rendered crisp at the higher resolution).
     paintDesign(ctx, design, { dims, template: tpl });
+    const filename = `${safeFilenameBase(profile?.name)}.png`;
     c.toBlob((blob) => {
-      if (blob) downloadBlob(blob, `${profile?.name || "label"}.png`);
+      if (!blob) {
+        window.alert("Export failed — the image may be too large to encode.");
+        return;
+      }
+      downloadBlob(blob, filename);
     }, "image/png");
   }
 

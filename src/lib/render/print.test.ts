@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { nextMultipleOf8, monoValue } from "./print";
+import { nextMultipleOf8, monoValue, exportScale } from "./print";
 
 describe("nextMultipleOf8 (encoder requires cols % 8 === 0)", () => {
   it("rounds up to the next multiple of 8", () => {
@@ -34,4 +34,34 @@ describe("monoValue (1-bit threshold — fixes the solid-black print)", () => {
     expect(monoValue(127, 127, 127, 255)).toBe(0);
     expect(monoValue(128, 128, 128, 255)).toBe(255);
   });
+});
+
+describe("exportScale (full-size PNG export)", () => {
+  const devW = 472;
+  const devH = 236; // 40×20mm @300dpi
+
+  it("no template → device size (scale 1)", () =>
+    expect(exportScale(0, 0, devW, devH)).toBe(1));
+
+  it("template matching the label aspect → export ≈ template size", () => {
+    // 1654×827 is the 2:1 label scaled ~3.5×
+    expect(exportScale(1654, 827, devW, devH)).toBeCloseTo(3.5, 1);
+  });
+
+  it("never downscales below device size for a small template", () =>
+    expect(exportScale(100, 50, devW, devH)).toBe(1));
+
+  it("mismatched aspect → scales by the larger ratio (preserves template detail)", () => {
+    // square 1000×1000 into a 2:1 label: max(1000/472, 1000/236) = ~4.24
+    expect(exportScale(1000, 1000, devW, devH)).toBeCloseTo(1000 / 236, 5);
+  });
+
+  it("caps so neither side exceeds MAX_EXPORT_PX", () => {
+    const s = exportScale(40000, 20000, devW, devH, 8000);
+    expect(devW * s).toBeLessThanOrEqual(8000 + 0.001);
+    expect(devH * s).toBeLessThanOrEqual(8000 + 0.001);
+  });
+
+  it("degenerate device size → scale 1 (no divide-by-zero)", () =>
+    expect(exportScale(1000, 1000, 0, 0)).toBe(1));
 });
